@@ -1,18 +1,32 @@
-import {Component} from '@angular/core';
+import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
 import {Book} from '../book.model';
 
 @Component({
   selector: 'ba-book-details',
   templateUrl: './book-details.component.html',
-  styleUrls: ['./book-details.component.scss']
+  styleUrls: ['./book-details.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BookDetailsComponent {
-  book: Book;
+  @Input()
+  book: Book | undefined;
+
+  @Output()
+  bookChange = new EventEmitter<Book>();
 
   constructor() {
-    this.book = {
-      author: 'Douglas Crockford',
-      title: 'JavaScript. The good parts',
+  }
+
+  notifyOnBookChange(event: Event): void {
+    event.preventDefault();
+    const bookForm = event.target as HTMLFormElement;
+    const authorElement = bookForm.querySelector<HTMLInputElement>('#author');
+    const titleElement = bookForm.querySelector<HTMLInputElement>('#title');
+    const changedBook: Book = {
+      id: this.book ? this.book.id : NaN,
+      author: (authorElement && authorElement.value) || '',
+      title: (titleElement && titleElement.value) || ''
     };
+    this.bookChange.emit(changedBook);
   }
 }

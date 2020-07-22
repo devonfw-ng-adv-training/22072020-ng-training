@@ -10,16 +10,18 @@
       </thead>
       <tbody>
       <tr *ngFor="let book of books; index as i"
-          (click)="selectBook(book)">
+          (click)="selectBook(book)"
+          [class.table-primary]="isBookSelected(book)">
         <th scope="row">{{i + 1}}</th>
         <td>{{book.author}}</td>
         <td>{{book.title}}</td>
       </tr>
       </tbody>
     </table>
-    {{selectedBook | json}}
   </section>
   <section class="col-4">
-    <ba-book-details></ba-book-details>
+    <ba-book-details *ngIf="selectedBook"
+                     [book]="selectedBook"
+                     (bookChange)="updateBook($event)"></ba-book-details>
   </section>
 </div>

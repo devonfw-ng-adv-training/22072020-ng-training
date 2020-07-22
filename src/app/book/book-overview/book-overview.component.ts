@@ -14,14 +14,17 @@ export class BookOverviewComponent {
   constructor() {
     this.books = [
       {
+        id: 0,
         author: 'Douglas Crockford',
         title: 'JavaScript. The good parts',
       },
       {
+        id: 1,
         author: 'Kyle Simpson',
         title: 'You don\'t know JS',
       },
       {
+        id: 2,
         author: 'Marek Matczak',
         title: 'Angular for nerds',
       }
@@ -30,5 +33,15 @@ export class BookOverviewComponent {
 
   selectBook(book: Book): void {
     this.selectedBook = book;
+  }
+
+  isBookSelected(book: Book): boolean {
+    return this.selectedBook === book;
+  }
+
+  updateBook(bookToUpdate: Book): void {
+    this.books = this.books.map(
+      book => book.id === bookToUpdate.id ? bookToUpdate : book);
+    this.selectedBook = undefined;
   }
 }

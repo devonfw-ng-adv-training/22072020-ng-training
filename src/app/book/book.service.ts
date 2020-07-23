@@ -1,10 +1,9 @@
 import {BehaviorSubject, Observable} from 'rxjs';
 import {Book} from './book.model';
 import {Injectable} from '@angular/core';
+import {delay} from 'rxjs/operators';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class BookService {
   private bookSubject = new BehaviorSubject<Book[]>([
     {
@@ -35,5 +34,18 @@ export class BookService {
       subscriber.next(bookCopy);
       subscriber.complete();
     });
+  }
+
+  getOne(id: number): Observable<Book> {
+    return new Observable<Book>(subscriber => {
+      const currentBooks = this.bookSubject.value;
+      const foundBook = currentBooks.find(book => book.id === id);
+      if (foundBook) {
+        subscriber.next({...foundBook});
+        subscriber.complete();
+      } else {
+        subscriber.error(`Book with ID ${id} could not be found`);
+      }
+    }).pipe(delay(1000));
   }
 }

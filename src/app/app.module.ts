@@ -6,6 +6,7 @@ import {BookModule} from './book/book.module';
 import {RouterModule} from '@angular/router';
 import {bookRoutes} from './book/book-routes';
 import {SharedModule} from './shared/shared.module';
+import {HttpClientModule} from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -13,9 +14,10 @@ import {SharedModule} from './shared/shared.module';
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     RouterModule.forRoot([
-      {path: '', redirectTo: '/books', pathMatch: 'full'},
-      ...bookRoutes
+      {path: '', redirectTo: 'web-client/books', pathMatch: 'full'},
+      {path: 'web-client', children: [...bookRoutes]}
     ]),
     BookModule.forRoot(),
     SharedModule

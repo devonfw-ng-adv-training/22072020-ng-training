@@ -1,0 +1,24 @@
+{
+  "books": [
+    {
+      "id": 0,
+      "author": "Douglas Crockford",
+      "title": "JavaScript. The good parts"
+    },
+    {
+      "id": 1,
+      "author": "Kyle Simpson",
+      "title": "You don't know JS"
+    },
+    {
+      "id": 2,
+      "author": "Marek Matczak",
+      "title": "Angular for nerds"
+    },
+    {
+      "id": 3,
+      "author": "Marek",
+      "title": "Some funny book part 2"
+    }
+  ]
+}

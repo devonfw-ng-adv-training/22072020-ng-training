@@ -4,15 +4,16 @@
       [class.ng-submitted]="bookFormDirective.submitted">
   <div class="form-group">
     <label for="author">Author</label>
-    <input id="author" class="form-control"
-           formControlName="author">
-    <div class="invalid-feedback">{{showErrorMessagesFor('author')}}</div>
+    <ba-with-error-messages>
+      <input id="author" class="form-control" formControlName="author">
+    </ba-with-error-messages>
   </div>
   <div class="form-group">
     <label for="title">Title</label>
-    <input class="form-control" id="title"
-           formControlName="title">
-    <div class="invalid-feedback">{{showErrorMessagesFor('title')}}</div>
+    <ba-with-error-messages>
+      <input class="form-control" id="title"
+             formControlName="title">
+    </ba-with-error-messages>
   </div>
   <button type="submit" class="btn btn-primary">Save</button>
 </form>

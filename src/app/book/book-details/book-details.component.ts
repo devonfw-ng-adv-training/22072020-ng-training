@@ -61,36 +61,6 @@ export class BookDetailsComponent implements OnDestroy {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
-
-  showErrorMessagesFor(controlName: string): string[] {
-    const errors = this.bookForm.get(controlName)?.errors;
-    if (errors) {
-      return Object.keys(errors)
-        .map(errorCode => {
-          let errorMessage;
-          switch (errorCode) {
-            case 'ourOwnRequired':
-            case 'required':
-              errorMessage = 'Please provide a value';
-              break;
-            case 'onlyNamesOf':
-              const errorMetadataOfOnlyNamesOf = errors[errorCode] as string[];
-              errorMessage = `Only specific names can be put: ${errorMetadataOfOnlyNamesOf.join(', ')}`;
-              break;
-            case 'maxlength':
-              const errorMetadata = errors[errorCode];
-              errorMessage = `The value provided is too long
-              (max. ${errorMetadata.requiredLength} characters)`;
-              break;
-            default:
-              errorMessage = 'Unknown error';
-              break;
-          }
-          return errorMessage;
-        });
-    }
-    return [];
-  }
 }
 
 

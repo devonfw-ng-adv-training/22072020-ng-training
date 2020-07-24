@@ -2,8 +2,9 @@ import {Component} from '@angular/core';
 import {Book} from '../book.model';
 import {BookService} from '../book.service';
 import {Observable} from 'rxjs';
-import {delay} from 'rxjs/operators';
-import {Router} from '@angular/router';
+import {delay, pluck, switchMap, tap} from 'rxjs/operators';
+import {ActivatedRoute, Router} from '@angular/router';
+import {SpinnerService} from '../../shared/spinner/spinner.service';
 
 @Component({
   selector: 'ba-book-overview',
@@ -14,14 +15,17 @@ export class BookOverviewComponent {
   readonly books$: Observable<Book[]>;
 
   constructor(private readonly books: BookService,
-              private readonly router: Router) {
+              private readonly router: Router,
+              private readonly route: ActivatedRoute,
+              spinner: SpinnerService) {
+    spinner.on();
     this.books$ = books.getAll()
       .pipe(
-        delay(1000)
+        tap(() => spinner.off()),
       );
   }
 
   navigateToBookDetails(book: Book): void {
-    this.router.navigate(['/book', book.id]);
+    this.router.navigate(['/web-client', 'book', book.id]);
   }
 }

@@ -3,6 +3,7 @@ import {ActivatedRouteSnapshot, Resolve, Router} from '@angular/router';
 import {Book} from '../book.model';
 import {Observable, throwError} from 'rxjs';
 import {BookService} from '../book.service';
+import {delay} from 'rxjs/operators';
 
 @Injectable()
 export class BookResolver implements Resolve<Book> {
@@ -15,7 +16,7 @@ export class BookResolver implements Resolve<Book> {
     if (bookIdAsString) {
       const bookId = +bookIdAsString;
       if (!isNaN(bookId)) {
-        return this.books.getOne(bookId);
+        return this.books.getOne(bookId).pipe(delay(1000));
       }
     }
     this.router.navigate(['/book']);

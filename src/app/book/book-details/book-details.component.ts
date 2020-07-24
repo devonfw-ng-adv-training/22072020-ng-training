@@ -1,10 +1,11 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, OnDestroy} from '@angular/core';
 import {Book} from '../book.model';
 import {BookService} from '../book.service';
 import {ActivatedRoute, Data} from '@angular/router';
-import {map, pluck, switchMap, tap} from 'rxjs/operators';
-import {Observable, OperatorFunction} from 'rxjs';
+import {map, pluck, takeUntil, tap} from 'rxjs/operators';
+import {OperatorFunction, Subject} from 'rxjs';
 import {Location} from '@angular/common';
+import {AbstractControl, FormControl, FormGroup, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
 
 @Component({
   selector: 'ba-book-details',
@@ -12,37 +13,100 @@ import {Location} from '@angular/common';
   styleUrls: ['./book-details.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BookDetailsComponent {
+export class BookDetailsComponent implements OnDestroy {
+  bookForm: FormGroup;
   private bookId: number | undefined;
-  book$: Observable<Book>;
+  private unsubscribe$ = new Subject();
 
   constructor(private readonly books: BookService,
               private readonly location: Location,
               route: ActivatedRoute) {
-    this.book$ = route.data
+    this.bookForm = new FormGroup({
+      author: new FormControl('',
+        [ourOwnRequired,
+          onlyNamesOf('Marek', 'John'),
+          Validators.maxLength(20)]),
+      title: new FormControl('', Validators.required)
+    });
+
+    route.data
       .pipe( // {book: {id: 6, author: 'fdsfs'}, someOtherParam: 'some value'}
+        takeUntil(this.unsubscribe$),
         getResolvedBook(), // {id: 6, author: 'fdsfs'}
         map(book => book || {author: '', title: ''}),
         tap(book => this.bookId = book.id)
-      );
+      )
+      .subscribe(book => this.bookForm.patchValue(book));
   }
 
-  saveBook(event: Event): void {
-    event.preventDefault();
-    const bookForm = event.target as HTMLFormElement;
-    const authorElement = bookForm.querySelector<HTMLInputElement>('#author');
-    const titleElement = bookForm.querySelector<HTMLInputElement>('#title');
-    const bookToSave: Book = {
-      id: this.bookId,
-      author: (authorElement && authorElement.value) || '',
-      title: (titleElement && titleElement.value) || ''
-    };
+  saveBook(): void {
+    if (this.bookForm.valid) {
+      const author = this.bookForm.get('author')?.value;
+      const title = this.bookForm.get('title')?.value;
+      const bookToSave: Book = {
+        id: this.bookId, author, title
+      };
 
-    this.books.saveOrUpdateBook(bookToSave)
-      .subscribe(() => {
-        this.location.back();
-      });
+      this.books.saveOrUpdateBook(bookToSave)
+        .pipe(
+          takeUntil(this.unsubscribe$)
+        )
+        .subscribe(() => {
+          this.location.back();
+        });
+    }
   }
+
+  ngOnDestroy(): void {
+    this.unsubscribe$.next();
+    this.unsubscribe$.complete();
+  }
+
+  showErrorMessagesFor(controlName: string): string[] {
+    const errors = this.bookForm.get(controlName)?.errors;
+    if (errors) {
+      return Object.keys(errors)
+        .map(errorCode => {
+          let errorMessage;
+          switch (errorCode) {
+            case 'ourOwnRequired':
+            case 'required':
+              errorMessage = 'Please provide a value';
+              break;
+            case 'onlyNamesOf':
+              const errorMetadataOfOnlyNamesOf = errors[errorCode] as string[];
+              errorMessage = `Only specific names can be put: ${errorMetadataOfOnlyNamesOf.join(', ')}`;
+              break;
+            case 'maxlength':
+              const errorMetadata = errors[errorCode];
+              errorMessage = `The value provided is too long
+              (max. ${errorMetadata.requiredLength} characters)`;
+              break;
+            default:
+              errorMessage = 'Unknown error';
+              break;
+          }
+          return errorMessage;
+        });
+    }
+    return [];
+  }
+}
+
+
+function ourOwnRequired(control: AbstractControl): ValidationErrors | null {
+  const value = control.value;
+  return value ? null : {ourOwnRequired: true};
+}
+
+function onlyNamesOf(...names: string[]): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    const value = control.value;
+    if (value) {
+      return names.indexOf(value) > -1 ? null : {onlyNamesOf: [...names]};
+    }
+    return null;
+  };
 }
 
 function getResolvedBook(): OperatorFunction<Data, Book | undefined> {

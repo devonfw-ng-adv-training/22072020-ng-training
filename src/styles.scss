@@ -1,2 +1,9 @@
 /* You can add global styles to this file, and also import other style files */
+$enable-rounded: false;
+$primary: #0070ad;
+
 @import "~bootstrap/scss/bootstrap";
+
+input.ng-invalid.ng-touched, form.ng-submitted input.ng-invalid {
+  @extend .is-invalid;
+}

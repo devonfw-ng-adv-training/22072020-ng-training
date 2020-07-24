@@ -5,33 +5,41 @@ import {delay} from 'rxjs/operators';
 
 @Injectable()
 export class BookService {
+  private idSeq = 0;
   private bookSubject = new BehaviorSubject<Book[]>([
     {
-      id: 0,
+      id: this.idSeq++,
       author: 'Douglas Crockford',
       title: 'JavaScript. The good parts',
     },
     {
-      id: 1,
+      id: this.idSeq++,
       author: 'Kyle Simpson',
       title: 'You don\'t know JS',
     },
     {
-      id: 2,
+      id: this.idSeq++,
       author: 'Marek Matczak',
       title: 'Angular for nerds',
     }
   ]);
   readonly value$ = this.bookSubject.asObservable();
 
-  updateBook(bookToUpdate: Book): Observable<Book> {
+  saveOrUpdateBook(bookToSaveOrUpdate: Book): Observable<Book> {
     return new Observable(subscriber => {
-      const bookCopy: Book = {...bookToUpdate};
       const currentBooks = this.bookSubject.value;
-      const newBooks = currentBooks.map(
-        book => book.id === bookToUpdate.id ? bookCopy : book);
+      let newBooks: Book[];
+      let newBook: Book;
+      if (bookToSaveOrUpdate.id != null) { // update
+        newBook = {...bookToSaveOrUpdate};
+        newBooks = currentBooks.map(
+          book => book.id === bookToSaveOrUpdate.id ? newBook : book);
+      } else { // save
+        newBook = {...bookToSaveOrUpdate, id: this.idSeq++};
+        newBooks = [...currentBooks, newBook];
+      }
       this.bookSubject.next(newBooks);
-      subscriber.next(bookCopy);
+      subscriber.next(newBook);
       subscriber.complete();
     });
   }
